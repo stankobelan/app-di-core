@@ -1,24 +1,25 @@
 ﻿using System.Threading.Tasks;
 using System.IO;
 using System.Net.Http;
+using homework.Wrapper;
 
 namespace homework
 {
     public class HttpStorage : IStorage
     {
         private readonly string _url;
-        private readonly IHttpClientFactory _clientFactory;
-        public HttpStorage(string url, IHttpClientFactory clientFactory)
+        private readonly IHttpClientWrapper _client;
+        public HttpStorage(string url, IHttpClientWrapper client)
         {
             _url = url;
-            _clientFactory = clientFactory;
+            _client = client;
         }
 
         public async Task<Stream> Load()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, _url);
-            var client = _clientFactory.CreateClient();
-            var response = await client.SendAsync(request);
+            
+            var response = await _client.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -32,9 +33,8 @@ namespace homework
 
         public async Task<bool> Save(Stream data)
         {
-            var client = _clientFactory.CreateClient();
             var inputData = new StreamContent(data);
-            var response = await client.PostAsync(_url, inputData);
+            var response = await _client.PostAsync(_url, inputData);
 
             return response.IsSuccessStatusCode;
         }
